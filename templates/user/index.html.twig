@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier{% endblock %}
+
+{% block stylesheets %}
+    <style>
+    #calendar {
+        width: 80%;
+        height: auto;
+    }
+    </style>
+{% endblock %}
+
+{% block body %}
+{{dump(data|raw)}}
+    {# <h1>Agenda de {{ data.user.name }} {{data.user.surname}}</h1> #}
+    <div id="calendar"></div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+   window.onload = () => {
+        let calendarElt = document.getElementById('calendar');
+
+        let calendar = new FullCalendar.Calendar(calendarElt, {
+            events: {{ data|raw }},
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            timezone: 'Europe/Paris',
+        });
+        calendar.render();
+    }
+</script>
+{% endblock %}
