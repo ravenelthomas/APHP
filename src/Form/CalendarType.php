@@ -28,29 +28,42 @@ class CalendarType extends AbstractType
             ->add('description')
             ->add('categories');
 
-        // Obtenez l'utilisateur connecté
         $user = $this->security->getUser();
 
-        if (!$options['isAdmin']) {
-            // Si l'utilisateur n'est pas administrateur, affichez uniquement son propre nom
-            $builder->add('user', TextType::class, [
-                'disabled' => true,
-                'data' => $user->getName() . ' ' . $user->getSurname(),
-                'label' => 'User',
-            ]);
-        } else {
-            // Si l'utilisateur est administrateur, affichez la liste complète des utilisateurs
-            $builder->add('user', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => function ($user) {
+        $builder->add('user', EntityType::class, [
+            'class' => User::class,
+            'choice_label' => function ($user) {
+                if ($this->security->isGranted('ROLE_ADMIN')) {
                     return $user->getName() . ' ' . $user->getSurname();
-                },
-                'multiple' => false,
-                'expanded' => false,
-                'label' => 'User',
-                'required' => true,
-            ]);
+                } else {
+                    if ($user->getId() == $this->security->getUser()->getId()) {
+                        return $user->getName() . ' ' . $user->getSurname() . ' (me)';
+                    }
+                }
+            },
+            'multiple' => false,
+            'expanded' => false,
+            'label' => 'User',
+            'required' => true,
+            'choices' => $this->getUserChoices(),
+        ]);
+    }
+
+    private function getUserChoices()
+    {
+        $user = $this->security->getUser();
+        $choices = [];
+
+        if ($this->security->isGranted('ROLE_ADMIN')) {
+            // Chargez tous les utilisateurs si l'utilisateur connecté est un administrateur
+            $userRepository = $this->doctrine->getRepository(User::class);
+            $choices = $userRepository->findAll();
+        } else {
+            // Sinon, ajoutez simplement l'utilisateur connecté aux choix
+            $choices[] = $user;
         }
+
+        return $choices;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
