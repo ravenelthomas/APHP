@@ -8,12 +8,22 @@
         width: 80%;
         height: auto;
     }
+    .links {
+        display: flex;
+        justify-content: space-between;
+    }
     </style>
 {% endblock %}
 
 {% block body %}
-{{dump(data|raw)}}
-    {# <h1>Agenda de {{ data.user.name }} {{data.user.surname}}</h1> #}
+    <h1>Agenda de {{ data[0].name }} {{data[0].surname}}</h1>
+    <div class="links">
+       <a href="{{ path('app_user_calendar_add') }}">Ajouter une tâche</a>
+       <a href="/logout" id="logout">Logout</a>
+       {% if is_granted('ROLE_ADMIN') %}
+           <a href="{{ path('app_admin_index') }}">Go to Admin</a>
+       {% endif %}
+    </div>
     <div id="calendar"></div>
 {% endblock %}
 
@@ -23,10 +33,24 @@
         let calendarElt = document.getElementById('calendar');
 
         let calendar = new FullCalendar.Calendar(calendarElt, {
-            events: {{ data|raw }},
             initialView: 'dayGridMonth',
             locale: 'fr',
-            timezone: 'Europe/Paris',
+            timeZone: 'Europe/Paris',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+         
+            events: [
+                {% for event in data %}
+                    {
+                        title: '{{ event.title }}',
+                        start: '{{ event.start }}',
+                        end: '{{ event.end }}',
+                    },
+                {% endfor %}
+            ]
         });
         calendar.render();
     }
