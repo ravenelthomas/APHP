@@ -10,13 +10,15 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Security\Core\Security;
+use Doctrine\Persistence\ManagerRegistry;
 class CalendarType extends AbstractType
 {
     private $security;
 
-    public function __construct(Security $security)
+    public function __construct(Security $security, ManagerRegistry $doctrine)
     {
         $this->security = $security;
+        $this->doctrine = $doctrine;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
